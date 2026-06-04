@@ -15,6 +15,9 @@ function [x_min, f_min, t, n, history] = PolakRibiereMethod(x0, E, f)
 
     grad_x0 = grad_num(x');
     s       = -grad_x0;
+    if norm(s) > 1e5
+        s = s / norm(s);
+    end
     func  = @(alpha) f_num((x + alpha * s)');
     alpha = GoldenSection(0, h, E, func);
     x_prev = x;
@@ -43,6 +46,9 @@ function [x_min, f_min, t, n, history] = PolakRibiereMethod(x0, E, f)
         end
         w = max(0, w); % Модификация PR+
         s = -grad_x + w * s_prev;
+        if norm(s) > 1e5
+            s = s / norm(s);
+        end
         func  = @(alpha) f_num((x + alpha * s)');
         alpha = GoldenSection(0, h, E, func);
         x_prev = x;

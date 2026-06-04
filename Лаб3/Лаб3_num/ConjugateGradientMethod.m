@@ -10,6 +10,9 @@ function [x_min, f_min, t, n, history] = ConjugateGradientMethod(x0, E, f)
 
         grad_x0 = gradient(f, x, E/10);
         s = -grad_x0;
+        if norm(s) > 1e5
+            s = s / norm(s);
+        end
         func = @(alpha) f(x + alpha * s);
         alpha = GoldenSection(0, h, E, func);
         x_prev = x;
@@ -31,6 +34,9 @@ function [x_min, f_min, t, n, history] = ConjugateGradientMethod(x0, E, f)
     if cycle_count >= dim
                 grad_x = gradient(f, x, E/10);
                 s = -grad_x;
+                if norm(s) > 1e5
+                    s = s / norm(s);
+                end
                 func = @(alpha) f(x + alpha * s);
                 alpha = GoldenSection(0, h, E, func);
                 x_prev = x;
@@ -50,6 +56,9 @@ function [x_min, f_min, t, n, history] = ConjugateGradientMethod(x0, E, f)
             grad_norm_curr = norm(grad_x);
             w = (grad_norm_curr^2) / (grad_norm_prev^2);
             s = -grad_x + w * s_prev;
+            if norm(s) > 1e5
+                s = s / norm(s);
+            end
             func  = @(alpha) f(x + alpha * s);
             alpha = GoldenSection(0, h, E, func);
             x_prev = x;

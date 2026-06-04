@@ -14,7 +14,7 @@ fprintf('\n🔹 ФУНКЦИЯ РОЗЕНБРОКА:\n');
 fprintf('   f(x) = (%.0f-x₁)² + %.0f·(x₂-x₁²)²\n', a, b);
 fprintf('   Минимум: (%.1f, %.1f), f* = 0\n\n', a, a^2);
 
-x0 = [-1.5, -1.5]; E = 1e-4;
+x0 = [-100.5, -100.5]; E = 1e-4;
 % Вызов с флагом 'final' для отрисовки только последних случаев
 [x_min, f_min, ~, n, w_log, viz_rosen] = PolakRibiereViz(x0, E, f_rosen, 'final');
 

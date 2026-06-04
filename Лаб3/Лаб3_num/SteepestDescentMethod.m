@@ -10,6 +10,9 @@ function [x_min, f_min, t, n, history] = SteepestDescentMethod(x0, E, f)
 
     grad_x0 = gradient(f, x, E/10);
     y = -grad_x0;
+    if norm(y) > 1e5
+        y = y / norm(y);
+    end
     func = @(alpha) f(x + alpha * y);
     alpha = GoldenSection(0, h, E, func);
     x_prev = x;
@@ -27,6 +30,9 @@ end
 while n <= kmax
         grad_x = gradient(f, x, E/10);
         y      = -grad_x;
+        if norm(y) > 1e5
+            y = y / norm(y);
+        end
         func = @(alpha) f(x + alpha * y);
         alpha = GoldenSection(0, h, E, func);
         x_prev = x;

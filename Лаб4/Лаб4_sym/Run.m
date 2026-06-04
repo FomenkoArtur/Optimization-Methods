@@ -40,20 +40,22 @@ tests = {
         'Rastrigin',   'f=20+x1^2-10cos(2pi*x1)+x2^2-10cos(2pi*x2)', [0.0, 0.0], 0;
 };
 
-method_names = {'Newton', 'NewtonRaphson', 'Secant', 'Broyden', 'DFP', 'BFGS'};
+% [ИЗМЕНЕНО] Добавлен 'LBFGS' в конец списка методов
+method_names = {'Newton', 'NewtonRaphson', 'Secant', 'Broyden', 'DFP', 'BFGS', 'LBFGS'};
 
-% Цвета в стиле оригинала + 3 дополнительных (сохраняем насыщенность и контраст)
+% [ИЗМЕНЕНО] Добавлен цвет для L-BFGS — тёмно-зелёный, контрастный на фоне остальных
 colors = {
     [0.85, 0.10, 0.10];  % Newton        — красный
     [0.05, 0.65, 0.10];  % NewtonRaphson — зелёный
     [0.10, 0.30, 0.95];  % Secant        — синий
     [0.90, 0.50, 0.10];  % Broyden       — оранжевый
     [0.60, 0.10, 0.80];  % DFP           — фиолетовый
-    [0.10, 0.70, 0.70]   % BFGS          — циан
+    [0.10, 0.70, 0.70];  % BFGS          — циан
+    [0.80, 0.70, 0.05]   % LBFGS         — жёлто-золотой
 };
 
-% Маркеры для различения траекторий
-markers = {'o', 's', '^', 'd', 'v', '>'};
+% [ИЗМЕНЕНО] Добавлен маркер '<' для L-BFGS
+markers = {'o', 's', '^', 'd', 'v', '>', '<'};
 
 fprintf('\n');
 fprintf('==========================================================================\n');
@@ -77,6 +79,8 @@ for i = 1:size(tests, 1)
     [x_broyden, f_broyden, t_broyden, n_broyden, hist_broyden] = BroydenMethod(x0, E, f_sym);
     [x_dfp,     f_dfp,     t_dfp,     n_dfp,     hist_dfp]     = DFPMethod(x0, E, f_sym);
     [x_bfgs,    f_bfgs,    t_bfgs,    n_bfgs,    hist_bfgs]    = BFGSMethod(x0, E, f_sym);
+    % [ИЗМЕНЕНО] Добавлен вызов LBFGSMethod по полной аналогии с остальными
+    [x_lbfgs,   f_lbfgs,   t_lbfgs,   n_lbfgs,   hist_lbfgs]  = LBFGSMethod(x0, E, f_sym);
 
     fprintf('\n');
     fprintf('--------------------------------------------------------------------------\n');
@@ -96,6 +100,9 @@ for i = 1:size(tests, 1)
         'DFP',               x_dfp(1),     x_dfp(2),     f_dfp,     t_dfp,     n_dfp);
     fprintf('  %-22s | x1=%-12.6f x2=%-12.6f | F=%-14.6e | T=%-11.7f | N=%-6d\n', ...
         'BFGS',              x_bfgs(1),    x_bfgs(2),    f_bfgs,    t_bfgs,    n_bfgs);
+    % [ИЗМЕНЕНО] Добавлена строка вывода для L-BFGS по полной аналогии с остальными
+    fprintf('  %-22s | x1=%-12.6f x2=%-12.6f | F=%-14.6e | T=%-11.7f | N=%-6d\n', ...
+        'LBFGS',             x_lbfgs(1),   x_lbfgs(2),   f_lbfgs,   t_lbfgs,   n_lbfgs);
     fprintf('--------------------------------------------------------------------------\n');
     
     % MODIFIED SECTION: Print specific info for Himmelblau as per lecture
@@ -114,12 +121,12 @@ for i = 1:size(tests, 1)
     figure('Name', sprintf('Сходимость: %s', fname), ...
            'NumberTitle', 'off', 'Color', 'white', 'Position', [100, 100, 1200, 800]);
 
-    % Коллекция историй (6 методов)
-    histories = {hist_newton, hist_nr, hist_secant, hist_broyden, hist_dfp, hist_bfgs};
+    % [ИЗМЕНЕНО] Коллекция историй расширена до 7 методов
+    histories = {hist_newton, hist_nr, hist_secant, hist_broyden, hist_dfp, hist_bfgs, hist_lbfgs};
 
-    % Обрезка траекторий по границам сетки (как в оригинале)
-    hist_clipped = cell(6, 1);
-    for k = 1:6
+    % [ИЗМЕНЕНО] Обрезка траекторий по границам сетки расширена до 7 методов
+    hist_clipped = cell(7, 1);
+    for k = 1:7
         H = histories{k};
         if isempty(H) || size(H, 1) < 1
             hist_clipped{k} = [];
@@ -146,7 +153,7 @@ for i = 1:size(tests, 1)
     colormap(gca, jet);
     hold on;
 
-    % Отрисовка траекторий всех 6 методов
+    % [ИЗМЕНЕНО] Отрисовка траекторий расширена до 7 методов
     for k = 1:numel(histories)
         H = hist_clipped{k};
         if isempty(H) || size(H, 1) < 2; continue; end
@@ -160,7 +167,7 @@ for i = 1:size(tests, 1)
             'LineWidth',       1.6, ...
             'MarkerSize',      3, ...
             'MarkerFaceColor', colors{k}, ...
-            'Marker',          markers{k}, ...  % [ADDED] Уникальные маркеры для 6 методов
+            'Marker',          markers{k}, ...
             'DisplayName',     method_names{k});
     end
 
@@ -188,12 +195,11 @@ for i = 1:size(tests, 1)
     % Фиксированные границы осей (как в оригинале)
     xlim([g(1), g(2)]);
     ylim([g(3), g(4)]);
-    
-
     zlim([0, max(log1p(Zg(:))) * 1.05]);
 end
 
 fprintf('\n');
 fprintf('==========================================================================\n');
-fprintf('  ВСЕ ТЕСТЫ ЗАВЕРШЕНЫ | Протестировано 6 методов на 5 функциях\n');
+% [ИЗМЕНЕНО] Обновлён итоговый счётчик: 7 методов на 5 функциях
+fprintf('  ВСЕ ТЕСТЫ ЗАВЕРШЕНЫ | Протестировано 7 методов на 5 функциях\n');
 fprintf('==========================================================================\n');
